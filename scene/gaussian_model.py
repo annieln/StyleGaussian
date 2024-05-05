@@ -238,23 +238,6 @@ class GaussianModel:
 
         self.optimizer = torch.optim.Adam(l, eps=1e-15)
 
-    def training_setup_decoder(self, training_args):
-        # compute the final vgg features for each point
-        self.final_vgg_features = self.feature_linear.forward_directly_on_point(self._vgg_features)
-
-        # delete vgg features and linear layer because we have the perpoint features now
-        del self._vgg_features
-        del self.feature_linear
-
-        # init gaussian conv
-        self.decoder = GaussianConv(self.get_xyz.detach()).cuda()
-       
-        l = [
-            {'params': self.decoder.parameters(), 'lr': 2e-3, "name": "decoder"}
-        ]
-
-        self.optimizer = torch.optim.Adam(l, eps=1e-15)
-
     def training_setup_style(self, training_args, decoder_path, photorealistic=False):
         # compute the final vgg features for each point
         self.final_vgg_features = self.feature_linear.forward_directly_on_point(self._vgg_features)
