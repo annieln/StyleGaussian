@@ -251,7 +251,10 @@ class GaussianModel:
         self.decoder = GaussianConv(self.get_xyz.detach(), K=(1 if photorealistic else 8)).cuda()
         if decoder_path:
             print('Init decoder from {}'.format(decoder_path))
-            (_xyz,
+            (active_sh_degree,
+            _xyz,
+            _features_dc,
+            _features_rest,
             _scaling,
             _rotation,
             _opacity,
