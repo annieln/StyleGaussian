@@ -130,13 +130,13 @@ def training(dataset, opt, pipe, ckpt_path, decoder_path, style_weight, content_
             style_img_features = vgg_encoder(normalize_vgg(style_img)) # [1, C, H, W]
             gt_image_features = vgg_encoder(normalize_vgg(gt_image.unsqueeze(0)))
 
-        # decoder the features of points to rgb
-        tranfered_features = gaussians.style_transfer(
+        # decode the features of points to rgb
+        transfered_features = gaussians.style_transfer(
             gaussians.final_vgg_features.detach(), # point cloud features [N, C]
             style_img_features.relu3_1,
         )
 
-        decoded_rgb = gaussians.decoder(tranfered_features) # [N, 3]
+        decoded_rgb = gaussians.decoder(transfered_features) # [N, 3]
 
         render_pkg = render(viewpoint_cam, gaussians, pipe, background, override_color=decoded_rgb)
         rendered_rgb = render_pkg["render"] # [3, H, W]
@@ -172,10 +172,15 @@ def training(dataset, opt, pipe, ckpt_path, decoder_path, style_weight, content_
                 rendered_rgb[:, -128:, -128:] = style_img.squeeze(0)
                 tb_writer.add_image('stylized_img', rendered_rgb.clamp(0,1), iteration, dataformats='CHW')
 
+            if (iteration == opt.iterations):
+                print("\n[ITER {}] Saving Gaussians".format(iteration))
+                scene.save(iteration)
+
             # Optimizer step
             if iteration < opt.iterations:
                 gaussians.optimizer.step()
                 gaussians.optimizer.zero_grad(set_to_none = True)
+
     # Save model
     os.makedirs(args.model_path + "/chkpnt", exist_ok = True)
     torch.save(gaussians.capture(is_style_model=True), args.model_path + "/chkpnt" + "/gaussians.pth")
