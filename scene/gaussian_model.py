@@ -65,7 +65,10 @@ class GaussianModel:
         
         if is_feature_model:
             return (
+                self.active_sh_degree,
                 self._xyz,
+                self._features_dc,
+                self._features_rest,
                 self._scaling,
                 self._rotation,
                 self._opacity,
@@ -75,7 +78,10 @@ class GaussianModel:
         
         if is_style_model:
             return (
+                self.active_sh_degree,
                 self._xyz,
+                self._features_dc,
+                self._features_rest,
                 self._scaling,
                 self._rotation,
                 self._opacity,
@@ -101,7 +107,10 @@ class GaussianModel:
     def restore(self, model_args, training_args=None, from_feature_model=False, from_style_model=False):
 
         if from_feature_model:
-            (self._xyz,
+            (self.active_sh_degree,
+            self._xyz,
+            self._features_dc,
+            self._features_rest, 
             self._scaling,
             self._rotation,
             self._opacity,
@@ -112,7 +121,10 @@ class GaussianModel:
             return
         
         if from_style_model:
-            (self._xyz,
+            (self.active_sh_degree,
+            self._xyz,
+            self._features_dc,
+            self._features_rest,
             self._scaling,
             self._rotation,
             self._opacity,
@@ -215,10 +227,6 @@ class GaussianModel:
                                                     max_steps=training_args.position_lr_max_steps)
         
     def training_setup_feature(self, training_args):
-        # delete spherical harmonics because we don't need them for feature reconstruction
-        del self._features_rest
-        del self._features_dc
-
         _vgg_features = torch.randn((self.get_xyz.shape[0], 32), device="cuda").requires_grad_(True)
         self._vgg_features = nn.Parameter(_vgg_features)
         self.feature_linear = LinearLayer(inChanel=32, out_dim=256).cuda()
