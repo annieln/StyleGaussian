@@ -78,11 +78,15 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, ply_path
 
             # Log
             tb_writer.add_scalar('train_loss/l1_loss', loss.item(), iteration)
+            if (iteration in saving_iterations):
+                print("\n[ITER {}] Saving Gaussians".format(iteration))
+                scene.save(iteration)
 
             # Optimizer step
             if iteration < opt.iterations:
                 gaussians.optimizer.step()
                 gaussians.optimizer.zero_grad(set_to_none = True)
+                
     # Save model
     os.makedirs(args.model_path + "/chkpnt", exist_ok = True)
     torch.save(gaussians.capture(is_feature_model=True), args.model_path + "/chkpnt" + "/feature.pth")
